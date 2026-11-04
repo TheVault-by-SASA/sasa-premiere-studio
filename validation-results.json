@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-04",
+  "version": "0.3.0-alpha.1",
+  "platform": "win32",
+  "node": "v24.15.0",
+  "commands": [
+    {
+      "command": "npm ci --no-fund --no-audit",
+      "result": "passed"
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "tests": 32,
+      "failed": 0
+    },
+    {
+      "command": "npm run check",
+      "result": "passed",
+      "filesAtRun": 43
+    },
+    {
+      "command": "npm run check",
+      "result": "passed",
+      "filesAtRun": 44
+    },
+    {
+      "command": "npm run release",
+      "result": "passed",
+      "sourceFiles": 68
+    },
+    {
+      "command": "fresh extraction: node scripts/setup.js (production dependencies only)",
+      "result": "passed"
+    },
+    {
+      "command": "fresh extraction: node scripts/doctor.js",
+      "result": "passed",
+      "modelInvocations": 0
+    },
+    {
+      "command": "fresh extraction: node --test tests/mcp.test.js tests/platform.test.js",
+      "result": "passed",
+      "tests": 4,
+      "failed": 0
+    },
+    {
+      "command": "fresh extraction: verify SOURCE-SHA256SUMS and private pairing/client paths",
+      "result": "passed",
+      "files": 68
+    }
+  ],
+  "hostValidation": "September historical evidence only; no new Premiere edits or live model calls",
+  "macOS": "untested host; platform-path unit coverage only",
+  "freshInstall": "passed on Windows; separate private state; real MCP stdio handshake; no Premiere edits"
+}

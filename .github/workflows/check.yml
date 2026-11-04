@@ -1,0 +1,21 @@
+name: checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --omit=dev
+      - run: npm run check
+      - name: Bridge and portability tests (no Premiere, media or desktop)
+        run: node --test tests/platform.test.js tests/agent-ui.test.js tests/panel.test.js tests/codex-rpc.test.js tests/codex-session.test.js tests/engine.test.js tests/agent-transport.test.js tests/lifecycle.test.js tests/adapter.test.js tests/mcp.test.js
+      - run: npm run release

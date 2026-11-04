@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "sasa-premiere-studio": {
+      "command": "node",
+      "args": [
+        "/ABSOLUTE/PATH/sasa-premiere-studio/services/mcp-server/main.js"
+      ],
+      "env": {
+        "SASA_STUDIO_STATE_DIR": "/ABSOLUTE/PRIVATE/STATE/DIRECTORY"
+      }
+    }
+  }
+}

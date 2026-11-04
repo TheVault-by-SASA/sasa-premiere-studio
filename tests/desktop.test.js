@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { _electron } from 'playwright';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { resolve, join } from 'node:path';
+import { createEngine } from '../services/local-engine/server.js';
+import { loadConfig } from '../services/local-engine/config.js';
+import { execFileSync } from 'node:child_process';
+
+test('desktop renders actual offline state, setup, and a real media analysis through isolated IPC', {timeout:35000}, async t => {
+  await mkdir('work/tests',{recursive:true});
+  const stateDir=await mkdtemp(resolve('work/tests/desktop-'));
+  const config=await loadConfig(stateDir), engine=await createEngine({...config,port:0});
+  await writeFile(join(stateDir,'connection.json'),JSON.stringify({token:config.token,port:engine.port}));
+  const mediaPath=join(stateDir,'test.wav');
+  execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y','-f','lavfi','-i','sine=duration=1',mediaPath],{windowsHide:true});
+  const electron=await _electron.launch({args:[resolve('.')],env:{...process.env,SASA_STUDIO_STATE_DIR:stateDir,SASA_STUDIO_USER_DATA:join(stateDir,'desktop'),SASA_STUDIO_SCREENSHOT:''}});
+  t.after(async()=>{await electron.close();await engine.close();});
+  const page=await electron.firstWindow(); const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+  await page.locator('#engine-status').filter({hasText:'Disponible'}).waitFor();
+  assert.equal(await page.locator('#host-status').innerText(),'Sin conexión');
+  assert.equal(await page.evaluate(()=>typeof require),'undefined');
+  await page.getByRole('button',{name:'Configurar conexión'}).click();
+  assert.equal(await page.locator('#setup').isVisible(),true);
+  await page.getByRole('button',{name:'Analizar un medio'}).click();
+  await electron.evaluate(({dialog},file)=>{dialog.showOpenDialog=async()=>({canceled:false,filePaths:[file]});},mediaPath);
+  await page.getByRole('button',{name:'Elegir archivo'}).click();
+  await page.locator('#media-result').waitFor();
+  assert.match(await page.locator('#media-result').innerText(),/test.wav/);
+  assert.match(await page.locator('#media-result').innerText(),/audio/);
+  await page.screenshot({path:resolve('work/desktop-media-verified.png'),fullPage:true});
+  assert.deepEqual(errors,[]);
+});
